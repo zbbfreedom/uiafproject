@@ -1,0 +1,11 @@
+UI Spy (UISpy.exe):
+http://msdn.microsoft.com/zh-cn/library/ms727247.aspx
+
+White: Automate windows applications
+http://www.codeplex.com/white
+
+The Microsoft UI Automation Library:
+http://msdn.microsoft.com/en-us/cc163288.aspx
+
+UI Automation Verify (UIA Verify) Test Automation Framework
+http://www.codeplex.com/UIAutomationVerify
