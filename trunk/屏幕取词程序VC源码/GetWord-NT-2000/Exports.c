@@ -392,6 +392,7 @@ DLLEXPORT DWORD WINAPI BL_SetFlag32(UINT nFlag, HWND hNotifyWnd,
 //Hook 所有Win32Api
 DLLEXPORT DWORD WINAPI NHHookWin32Api()
 {
+	//做一些取词前的清理工作(把之前取的数据清掉)
 	g_nCurCaretPlace = -1;
 	g_szCurWord[0] = 0x00;
 	g_szTotalWord[0] = 0x00;
@@ -403,6 +404,7 @@ DLLEXPORT DWORD WINAPI NHHookWin32Api()
 	nWordNum = 0;
 	szMemDCWordBuff[0] = 0x00;
 
+	//开始Hook所有的文字输出函数
 	HookAllTextOut();
 
 	return BL_OK;
@@ -420,13 +422,6 @@ DLLEXPORT DWORD WINAPI NHUnHookWin32Api()
 //Suijun: 安装HOOK, HOOK  5个 Windows API函数BitBlt, TextOutA, TextOutW, ExtTextOutA, ExtTextOutW
 void HookAllTextOut()
 {
-/*
-	{
-		char cBuffer[0x100];
-		wsprintf(cBuffer, "HookAllTextOut : %s\n", "ok");
-		OutputDebugString(cBuffer);
-	}
-*/
 	HookWin32Api(&g_BitBltHook, HOOK_CAN_WRITE);
 	HookWin32Api(&g_TextOutAHook, HOOK_CAN_WRITE);
 	HookWin32Api(&g_TextOutWHook, HOOK_CAN_WRITE);
