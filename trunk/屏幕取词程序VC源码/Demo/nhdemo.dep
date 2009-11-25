@@ -1,0 +1,27 @@
+# Microsoft Developer Studio Generated Dependency File, included by nhdemo.mak
+
+.\getwords.cpp : \
+	".\getwords.h"\
+	
+
+.\nhdemo.cpp : \
+	".\getwords.h"\
+	".\nhdemo.h"\
+	".\nhdemoDlg.h"\
+	
+
+.\nhdemo.rc : \
+	".\res\nhdemo.ico"\
+	".\res\nhdemo.rc2"\
+	
+
+.\nhdemoDlg.cpp : \
+	".\getwords.h"\
+	".\nhdemo.h"\
+	".\nhdemoDlg.h"\
+	
+
+.\StdAfx.cpp : \
+	".\StdAfx.h"\
+	"f:\msvs\vc98\include\basetsd.h"\
+	

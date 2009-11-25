@@ -1,0 +1,38 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: GetWord - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "D:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP88.tmp" with contents
+[
+/nologo /Gz /MTd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GETWORD_EXPORTS" /FR"Debug/" /Fp"Debug/GetWord.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /c 
+"D:\Documents and Settings\Administrator\桌面\屏幕取词程序VC源码\GetWord-NT-2000\Exports.c"
+]
+Creating command line "cl.exe @D:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP88.tmp" 
+Creating temporary file "D:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP89.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"Debug/nhw32.pdb" /debug /machine:I386 /def:".\GetWord.def" /out:"Debug/nhw32.dll" /implib:"Debug/nhw32.lib" /pdbtype:sept 
+".\Debug\Exports.obj"
+".\Debug\findword.obj"
+".\Debug\Hookapi.obj"
+]
+Creating command line "link.exe @D:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP89.tmp"
+<h3>Output Window</h3>
+Compiling...
+Exports.c
+Linking...
+   Creating library Debug/nhw32.lib and object Debug/nhw32.exp
+Creating command line "bscmake.exe /nologo /o"Debug/GetWord.bsc"  ".\Debug\Exports.sbr" ".\Debug\findword.sbr" ".\Debug\Hookapi.sbr""
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+nhw32.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

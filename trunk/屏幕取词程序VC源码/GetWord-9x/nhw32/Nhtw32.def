@@ -1,0 +1,32 @@
+; -----------------------------------------------------------------
+; File name:  NHW32.DEF
+;
+; This is the module defintion file for the 32-bit dll.
+;
+; Written by
+;
+; Copyright (C) 1991 - 1996 Microsoft Corporation.  All rights reserved.
+; -----------------------------------------------------------------
+
+
+LIBRARY  NHW32
+
+DESCRIPTION  'Sample DLL for 32-bit side of thunking layer'
+
+SECTIONS
+		.sdata READ WRITE SHARED    ;shared data
+		.data  READ WRITE SHARED
+		.idata READ WRITE SHARED
+		.bss   READ WRITE SHARED
+		.rdata READ WRITE SHARED
+
+;		.reloc READ WRITE SHARED
+
+		.rsrc  READ WRITE SHARED
+		.text  READ WRITE SHARED
+
+EXPORTS
+        BL_GetText32		@1
+        BL_SetFlag32		@2
+
+		NhExtTextOutW		@3

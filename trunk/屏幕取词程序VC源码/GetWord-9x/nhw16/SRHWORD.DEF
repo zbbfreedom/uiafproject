@@ -1,0 +1,45 @@
+LIBRARY  NHW16
+
+DESCRIPTION  'NhW16.DLL'
+EXETYPE  WINDOWS
+
+SEGMENTS
+        WEPSEG      PRELOAD FIXED
+
+CODE    PRELOAD MOVEABLE DISCARDABLE
+DATA    PRELOAD MOVEABLE SINGLE
+
+HEAPSIZE 5120
+
+IMPORTS
+        C16ThkSL01      = KERNEL.631
+        ThunkConnect16  = KERNEL.651
+
+EXPORTS
+        THK_THUNKDATA16   @1  RESIDENTNAME
+        DllEntryPoint     @2  RESIDENTNAME
+        
+        BL_HookWinApi16   @3  RESIDENTNAME
+        BL_UnHookWinApi16 @4  RESIDENTNAME
+        BL_SetVer16       @7  RESIDENTNAME
+        BL_SetPara16      @8  RESIDENTNAME
+        BL_GetBuffer16    @9  RESIDENTNAME
+                        
+        WEP               @10 RESIDENTNAME
+
+        BLTextOut         @11 RESIDENTNAME
+        BLExtTextOut      @12 RESIDENTNAME
+        BLBitBlt          @13 RESIDENTNAME
+
+;		BL_ExtTextOutW    @14 RESIDENTNAME
+		Nh16_AddToTotalWord @14
+
+		Nh16_GetTempLen			@15 RESIDENTNAME
+		Nh16_AddToTempBuff		@16 RESIDENTNAME
+		Nh16_AddToWordStruct	@17 RESIDENTNAME
+		Nh16_AddToCharStruct	@18 RESIDENTNAME
+
+; Phys export.
+        GetRing0Callgate		@19 RESIDENTNAME
+        FreeRing0Callgate		@20 RESIDENTNAME
+			
