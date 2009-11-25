@@ -740,6 +740,7 @@ DLLEXPORT BOOL WINAPI NHExtTextOutA(HDC hdc,
 				g_dwDCOrg.x = 0;
 				g_dwDCOrg.y = 0;
 				bRecAllRect = FALSE;
+				//findword.c中的代码,取出当前字符的矩形范围
 				GetStringRect(hdc, (LPSTR)lpString, cbCount, X, Y,
 					&g_rcTotalRect, lpDx);
 				bRecAllRect = TRUE;
@@ -756,6 +757,7 @@ DLLEXPORT BOOL WINAPI NHExtTextOutA(HDC hdc,
 				{
 						GetDCOrgEx(hdc, &g_dwDCOrg);
     
+						//findword.c中的代码,取出当前位置下的单词
 						GetCurMousePosWord(hdc, (LPSTR)lpString, cbCount,
 							X, Y, lpDx);
 				}
