@@ -67,17 +67,18 @@ extern int g_nGetWordStyle;
 
 /**************************************************************************
 **************************************************************************/
+//获取字符类型
 __inline int  GetCharType(char ch)
 {
 	BYTE chitem = ch;
 
 	if (ch < 0)
-		return CHAR_TYPE_HZ;
+		return CHAR_TYPE_HZ;//比较，如果小于0，认定汉字
 
 	if (((ch >= 'a')&&(ch <= 'z'))||
 	    ((ch >= 'A')&&(ch <= 'Z')))
 	{
-		return CHAR_TYPE_ASCII;
+		return CHAR_TYPE_ASCII;//认定英文字符
 	}
 	
 	return CHAR_TYPE_OTHER;	
@@ -88,8 +89,9 @@ __inline int  FindAWord(LPCSTR lpString, int nFromPlace, int nLength)
 	//Modified by ZHHN on 2000.4
 	int nResult = 0;
 
-	switch(g_nGetWordStyle)
+	switch(g_nGetWordStyle)//判断g_nGetWordStyle,这个变量是在Exports.c里面定义的
 	{
+	//根据以下条件进行字符处理
 	case GETWORD_D_ENABLE:
 	case GETWORD_TW_ENABLE:
 	case GETPHRASE_ENABLE:
@@ -104,7 +106,7 @@ __inline int  FindAWord(LPCSTR lpString, int nFromPlace, int nLength)
 	return nResult;
 	//Modified end
 }
-
+//为了获得lpString里连续英文字符的最后一个位置，nFromPlace是起始位置，nLength是解析长度。
 __inline int  FindDWord(LPCSTR lpString, int nFromPlace, int nLength)
 {
 	int i = nFromPlace;
@@ -112,34 +114,35 @@ __inline int  FindDWord(LPCSTR lpString, int nFromPlace, int nLength)
 	{
 		if (GetCharType(lpString[i]) == CHAR_TYPE_ASCII)
 		{
-			i++;
+			i++;//如果是英文字符，当前位置+1	
 		}
 		else
 		{
-			return i-1;
+			return i-1;非CHAR_TYPE_ASCII的话，当前位置-1并返回
 		}
 	} 
 	
 	return nLength - 1;
 }
-
+//这个和FindDWord类似，也是为了获取连续英文字符的最后一个位置，只不过常量字符串lpString为包含'-'的情况
 __inline int  FindTWWord(LPCSTR lpString, int nFromPlace, int nLength)
 {
 	int i = nFromPlace;
 	while (i < nLength)
 	{
-		if (lpString[i] == CHAR_LINK)
+		if (lpString[i] == CHAR_LINK)//这里的判断有点疑惑，应该是'-'这个字符，即：如果当前位置是'-',从当前位置的下一个判断
 		{
+			//如果满足上面的条件，判断下一个字符是否是英文字符
 			if (IsASCIIWord(lpString, nFromPlace, nLength, i + 1))
 			{
-				i++;
+				i++;//是则+1
 			}
 			else
 			{
-				return i-1;
+				return i-1;不是的话返回i-1
 			}
 		}
-		else
+		else//对于当前的位置不是'-'字符的话，判断当前位置
 		{
 			if (IsASCIIWord(lpString, nFromPlace, nLength, i))
 			{
@@ -154,7 +157,7 @@ __inline int  FindTWWord(LPCSTR lpString, int nFromPlace, int nLength)
 	
 	return nLength - 1;
 }
-
+//判断是否是英文字符，实际就调用了GetCharType方法而已，感觉nFromPlace和nLength这两个参数多余
 __inline BOOL IsASCIIWord(LPCSTR lpString, int nFromPlace, int nLength, int nCurCharNum)
 {
 	if (GetCharType(lpString[nCurCharNum]) == CHAR_TYPE_ASCII)
@@ -164,23 +167,23 @@ __inline BOOL IsASCIIWord(LPCSTR lpString, int nFromPlace, int nLength, int nCur
 
 	return FALSE;
 }
-
+//获取连续中文字符的最后位置（与FindDWord功能类似）
 __inline int  FindHZWord(LPCSTR lpString, int nFromPlace, int nLength)
 {
-	int i = nFromPlace;
-
+	int i = nFromPlace;//起始位置
+	//判断是否为非法的字符：主要是把：全角空格，|,\等等字符过滤掉
 	if ((BYTE)(lpString[nFromPlace]) >= 0xa1
 		&& (BYTE)(lpString[nFromPlace]) <= 0xa9)
 	{
 		return nFromPlace + 1 ;
 	}
-
+	//在排除上面的情况下（此时起始位置为中文字符）
 	while (i < nLength)
 	{
 		if (GetCharType(lpString[i]) == CHAR_TYPE_HZ)
 		{
 			if ((BYTE)(lpString[i]) >= 0xa1
-				&& (BYTE)(lpString[i]) <= 0xa9)
+				&& (BYTE)(lpString[i]) <= 0xa9)//判断是否为特殊的符号，判断之后的处理逻辑与查找英文字符类似
 			{
 				return i - 1;
 			}
@@ -195,7 +198,7 @@ __inline int  FindHZWord(LPCSTR lpString, int nFromPlace, int nLength)
 	
 	return nLength - 1;
 }
-
+//获取下一个字符（包括英文或中文字符）的其实位置
 __inline int FindNextWordBegin(LPCSTR lpString, int nFromPlace, int nLength)
 {
 	int i = nFromPlace;
@@ -213,7 +216,7 @@ __inline int FindNextWordBegin(LPCSTR lpString, int nFromPlace, int nLength)
 	
 	return i - 1;
 }
-
+//根据传入的字符类型参数，分别求连续的最后一个字符的位置
 __inline int GetCurWordEnd(LPCSTR lpString, int nFromPlace, int nLength, int nCharType)
 {
 	switch (nCharType)
@@ -230,7 +233,7 @@ __inline int GetCurWordEnd(LPCSTR lpString, int nFromPlace, int nLength, int nCh
 	}
 	return FindAWord(lpString, nFromPlace, nLength);
 }
-
+//拷贝制定部分的字符串，
 __inline void CopyWord(LPSTR lpWord, LPCSTR lpString, int nBegin, int nEnd)
 {
 	int i;
@@ -238,50 +241,50 @@ __inline void CopyWord(LPSTR lpWord, LPCSTR lpString, int nBegin, int nEnd)
 	{
 		lpWord[i - nBegin] = lpString[i];
 	}
-	lpWord[nEnd - nBegin + 1] = '\0';
+	lpWord[nEnd - nBegin + 1] = '\0';//指定字符串结尾
 }
-
+//获取当前的绘制矩形的纵向位置（应该就是我们重绘的位置）
 void GetStringTopBottom(HDC hDC, int y, RECT* lpStringRect)
 {
 	POINT  WndPos;
 
-	WndPos.y = g_dwDCOrg.y;
+	WndPos.y = g_dwDCOrg.y;//注：g_dwDCOrg这个点也是在Exports.c中定义的，初始为{0,0}
 
-    if (TA_UPDATECP & g_nTextAlign)
+    if (TA_UPDATECP & g_nTextAlign)//注g_nTextAlign是在Exports.c中定义的，初始化为0。//判断文本对齐模式是否为TA_UPDATECP以及g_nTextAlign
     {
-    	y = g_CurPos.y;
+    	y = g_CurPos.y;//在当前位置重绘，g_CurPos在Exports.c中定义
     }
     
-	switch ((TA_TOP | TA_BOTTOM)&g_nTextAlign)
+	switch ((TA_TOP | TA_BOTTOM)&g_nTextAlign)//对不同的对齐方式获取
 	{
-		case TA_BOTTOM:
+		case TA_BOTTOM://底对齐：矩形框的纵向的top值为y-字符高度+字符高度的顶部空间（为什么这样求值不太清楚）
 			 lpStringRect->top    = y - g_tm.tmHeight + g_tm.tmInternalLeading;
 			 lpStringRect->bottom = y;
 			 break;
 		case TA_BASELINE:
-			 lpStringRect->top    = y - g_tm.tmAscent;
-			 lpStringRect->bottom = y + g_tm.tmDescent;
+			 lpStringRect->top    = y - g_tm.tmAscent;//y-字符上部高度
+			 lpStringRect->bottom = y + g_tm.tmDescent;//y+字符下部高度
 			 break;
-		case TA_TOP:
+		case TA_TOP://上对齐，处理逻辑和下对齐类似
 		default:
 			 lpStringRect->top    = y;
 			 lpStringRect->bottom = y + g_tm.tmHeight + g_tm.tmInternalLeading;
 			 break;
 	}
 	
-	LPtoDP(hDC, (LPPOINT)lpStringRect, 2);
+	LPtoDP(hDC, (LPPOINT)lpStringRect, 2);//对上面求的的逻辑坐标进行转换
 
 	lpStringRect->top    = lpStringRect->top    + WndPos.y;
 	lpStringRect->bottom = lpStringRect->bottom + WndPos.y;
 }
-
+//获取绘制矩形的横向位置。
 void GetStringLeftRight(HDC hDC, LPSTR szBuff, int cbLen, int x, RECT* lpStringRect, CONST INT *lpDx)
 {
 	SIZE   StringSize;
 	POINT  WndPos;
     int i;
 
-	if (cbLen < 0)
+	if (cbLen < 0)//如果参数cbLen<0，矩形结构的四个参数都为0
 	{
 		lpStringRect->top    = 0;
 		lpStringRect->bottom = 0;
@@ -289,28 +292,28 @@ void GetStringLeftRight(HDC hDC, LPSTR szBuff, int cbLen, int x, RECT* lpStringR
 		lpStringRect->right  = 0;
 		return;
 	}
-	
+	//获取指定长度字符串的高度和宽度，StringSize存储
 	GetTextExtentPoint32(hDC, szBuff, cbLen, &StringSize);	//Modified by ZHHN on 2000.1.14
 
 	WndPos.x = g_dwDCOrg.x;
 	
-	if (lpDx != NULL)
+	if (lpDx != NULL)//lpDx!=null说明绘制字符串的时候设置了字符间距
 	{
 		StringSize.cx = 0;
 		for (i = 0; i < cbLen; i++)
 		{
-			StringSize.cx += lpDx[i];
+			StringSize.cx += lpDx[i];//指定字符间距不为空，那么指定长度的字符串的宽度需要加上字符间距
 		}
 	}
 
-    if (TA_UPDATECP & g_nTextAlign)
+    if (TA_UPDATECP & g_nTextAlign)//当前位置绘制
     {
     	x = g_CurPos.x;
     }
-    
+    //下面的switch语句的处理逻辑与GetStringTopBottom类似了，分别针对不同的对齐方式，指定矩形框的位置
 	switch ((TA_LEFT | TA_CENTER | TA_RIGHT)&g_nTextAlign)
 	{
-		case TA_RIGHT:
+		case TA_RIGHT://右对齐
 			 if (!bRecAllRect)
 			 {
 				 lpStringRect->right = x;
@@ -322,7 +325,7 @@ void GetStringLeftRight(HDC hDC, LPSTR szBuff, int cbLen, int x, RECT* lpStringR
 			 	lpStringRect->right= g_rcTotalRect.left + StringSize.cx;
 			 }
 			 break;
-		case TA_CENTER:
+		case TA_CENTER://居中对齐
 			 if (!bRecAllRect)
 			 {
 				 lpStringRect->right = x + StringSize.cx / 2;
@@ -341,7 +344,7 @@ void GetStringLeftRight(HDC hDC, LPSTR szBuff, int cbLen, int x, RECT* lpStringR
 			 break;
 	}
 	
-	LPtoDP(hDC, (LPPOINT)lpStringRect, 2);
+	LPtoDP(hDC, (LPPOINT)lpStringRect, 2);//转换逻辑坐标
 
 	lpStringRect->left   = lpStringRect->left   + WndPos.x;
 	lpStringRect->right  = lpStringRect->right  + WndPos.x;
@@ -352,7 +355,8 @@ void GetStringLeftRight(HDC hDC, LPSTR szBuff, int cbLen, int x, RECT* lpStringR
 // Bug5: get word position error sometimes
 //Author: Zhang Haining
 //Date: 01/19/2000
-
+//获取中文字符的处理方法，跟英文字符的处理逻辑是一样的，有肯能就是在存储英文字符与中文字符之间有差异，（看他的注释也是，存中文字符是抛异常应该是）
+//所以下面的lpWideCharStr声明为LPCWSTR类型的，为16位，而上面处理英文字符时是8位的数据类型。
 void GetStringLeftRightW(HDC hDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, RECT* lpStringRect, CONST INT *lpDx)
 {
 	SIZE   StringSize;
@@ -424,7 +428,8 @@ void GetStringLeftRightW(HDC hDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x
 	lpStringRect->left   = lpStringRect->left   + WndPos.x;
 	lpStringRect->right  = lpStringRect->right  + WndPos.x;
 }
-
+//获取整个矩形的横向和纵向的位置，实际上就是：GetStringLeftRight+GetStringTopBottom的合。但是不知道为什么，他不是调用上面的方法，而是又重新写了一遍，就是把
+//前面的两个方法内容copy了一遍而已
 void GetStringRect(HDC hDC, LPSTR szBuff, int cbLen, int x, int y, RECT* lpStringRect, CONST INT *lpDx)
 {
 	SIZE   StringSize;
@@ -459,7 +464,7 @@ void GetStringRect(HDC hDC, LPSTR szBuff, int cbLen, int x, int y, RECT* lpStrin
     	x = g_CurPos.x;
     	y = g_CurPos.y;
     }
-
+	//获取横向位置
 	switch ((TA_LEFT | TA_CENTER | TA_RIGHT)&g_nTextAlign)
 	{
 		case TA_RIGHT:
@@ -493,7 +498,7 @@ void GetStringRect(HDC hDC, LPSTR szBuff, int cbLen, int x, int y, RECT* lpStrin
 			 lpStringRect->right = x + StringSize.cx;
 			 break;
 	}
-	
+	//获取纵向位置
 	switch ((TA_TOP | TA_BOTTOM | TA_BASELINE)&g_nTextAlign)
 	{
 		case TA_BOTTOM:
@@ -524,7 +529,7 @@ void GetStringRect(HDC hDC, LPSTR szBuff, int cbLen, int x, int y, RECT* lpStrin
 // Bug5: get word position error sometimes
 //Author: Zhang Haining
 //Date: 01/19/2000
-
+//为中文字符写的获取矩形的位置，与英文字符逻辑一样，只不过传参的类型由8位改为16位
 void GetStringRectW(HDC hDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, int y, RECT* lpStringRect, CONST INT *lpDx)
 {
 	SIZE   StringSize;
@@ -618,7 +623,7 @@ void GetStringRectW(HDC hDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, int
 	lpStringRect->left   = lpStringRect->left   + WndPos.x;
 	lpStringRect->right  = lpStringRect->right  + WndPos.x;
 }
-
+//获取当前鼠标下的字
 DWORD GetCurMousePosWord(HDC   hDC, 
 						 LPSTR szBuff, 
 						 int   cbLen, 
@@ -641,22 +646,24 @@ DWORD GetCurMousePosWord(HDC   hDC,
 		OutputDebugString(cBuffer);
 	}
 */
+	//矩形的纵向位置
 	GetStringTopBottom(hDC, y, &StringRect);
 
+	//矩形的纵向位置与当前鼠标位置进行判断，但是判断逻辑有点不明白（感觉弄反了。。）
 	if ((StringRect.top > g_CurMousePos.y) || (StringRect.bottom < g_CurMousePos.y))
 	{
 		return NO_CURMOUSEWORD;
 	}
-
+	//调用前面获取矩形位置的方法
 	GetStringRect(hDC, szBuff, cbLen, x, y, &StringRect, lpDx);
 	nLeft = StringRect.left;
 
-	nPrevWord = nCurrentWord = -1;
+	nPrevWord = nCurrentWord = -1;//当前字和前一字都记为-1
 	while (nCurrentWord < cbLen)
 	{
-		CharType     = GetCharType(szBuff[nCurrentWord + 1]);
+		CharType     = GetCharType(szBuff[nCurrentWord + 1]);//先获取下一字的类型
 		nPrevWord    = nCurrentWord;
-		nCurrentWord = GetCurWordEnd(szBuff, nPrevWord + 1, cbLen, CharType);
+		nCurrentWord = GetCurWordEnd(szBuff, nPrevWord + 1, cbLen, CharType);//获取连续类型相同的字符的最后一个位置
 		dwReturn     = CheckMouseInCurWord(hDC, szBuff, cbLen, x, y, lpDx, &nLeft, nPrevWord + 1, nCurrentWord, CharType);
 /*
 		if (cbLen != 0)
@@ -793,7 +800,7 @@ DWORD GetCurMousePosWordW(HDC   hDC,
 	//return NO_CURMOUSEWORD;
 	return dwResult;	//Modified by ZHHN on 2000.4
 }
-
+//当前鼠标是否聚焦在字符串上
 DWORD CheckMouseInCurWord(HDC   hDC, 
 						  LPSTR szBuff, 
 						  int   cbLen, 
@@ -820,8 +827,8 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 		OutputDebugString(cBuffer);
 	}
 */
-	if (  ((g_CurMousePos.x >= StringRect.left    ) && (g_CurMousePos.x <= StringRect.right))
-	    || (g_CurMousePos.x == StringRect.left - 1)
+	if (  ((g_CurMousePos.x >= StringRect.left    ) && (g_CurMousePos.x <= StringRect.right))//鼠标横坐标在字符串宽度之内
+	    || (g_CurMousePos.x == StringRect.left - 1)//只有一个字的情况
 	    || (g_CurMousePos.x == StringRect.right + 1))
 	{
 /*
@@ -836,8 +843,8 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 		{
 			case CHAR_TYPE_HZ:
 			case CHAR_TYPE_ASCII:
-				 CopyWord(g_szCurWord, szBuff, nBegin, nEnd);
-				 g_CurWordRect.left   = StringRect.left;
+				 CopyWord(g_szCurWord, szBuff, nBegin, nEnd);//复制字符串
+				 g_CurWordRect.left   = StringRect.left;//应该是制定重绘的范围
 				 g_CurWordRect.right  = StringRect.right;
 				 g_CurWordRect.top    = StringRect.top;
 				 g_CurWordRect.bottom = StringRect.bottom;
@@ -994,7 +1001,7 @@ DWORD CheckMouseInCurWordW(HDC   hDC,
 
 	return NO_CURMOUSEWORD;   
 }
-
+//鼠标聚焦的矩形块的位置
 DWORD CalculateCaretPlace(HDC   hDC, 
 						  LPSTR szBuff, 
 						  int   cbLen, 
@@ -1011,16 +1018,16 @@ DWORD CalculateCaretPlace(HDC   hDC,
 	int   TempPlace;
 	int   i;
 
-	if ((nCharType == CHAR_TYPE_HZ) && (nBegin == nEnd))
+	if ((nCharType == CHAR_TYPE_HZ) && (nBegin == nEnd))//中文字符，且字符的
 	{
 		g_nCurCaretPlace = -1;
 		return 0L;
 	}
-
+	//下面是获取相邻的两个矩形的位置（区分矩形是根据字符类型）
 	GetStringRect(hDC, szBuff, nBegin, x, y, &BeginRect, lpDx);
 	
 	GetStringRect(hDC, szBuff, nEnd + 1,   x, y, &StringRect, lpDx);
-	StringRect.left = BeginRect.right;
+	StringRect.left = BeginRect.right;//这里赋值的意义不太清楚，
     if (StringRect.left == StringRect.right)
     {
 		g_nCurCaretPlace = -1;
@@ -1030,10 +1037,10 @@ DWORD CalculateCaretPlace(HDC   hDC,
 	switch (nCharType)
 	{
 		case CHAR_TYPE_HZ:
-			 itemWidth = ((double)StringRect.right - (double)StringRect.left + 1) / ((double)nEnd - (double)nBegin + 1);
+			 itemWidth = ((double)StringRect.right - (double)StringRect.left + 1) / ((double)nEnd - (double)nBegin + 1);//平均每个字的宽度
 			 for (i = 0; i <= (nEnd - nBegin + 1); i++)
 			 {
-			 	if (CalcCaretInThisPlace(g_CurMousePos.x, (double)((double)StringRect.left + (double)(itemWidth * i))))
+			 	if (CalcCaretInThisPlace(g_CurMousePos.x, (double)((double)StringRect.left + (double)(itemWidth * i))))//计算鼠标聚焦的矩形块的宽度
 			 	{
 				 	g_nCurCaretPlace = i;
 				 	i = nEnd - nBegin + 2;
@@ -1041,11 +1048,11 @@ DWORD CalculateCaretPlace(HDC   hDC,
 			 }
              break;
 		case CHAR_TYPE_ASCII:
-			 itemWidth = (StringRect.right - StringRect.left + 1) / (nEnd - nBegin + 1);
-			 TempPlace = (g_CurMousePos.x - StringRect.left) * (nEnd - nBegin + 1) / (StringRect.right - StringRect.left);
-			 GetStringRect(hDC, szBuff, TempPlace,     x, y, &CaretPrevRect, lpDx);
+			 itemWidth = (StringRect.right - StringRect.left + 1) / (nEnd - nBegin + 1);//平均每个字的宽度
+			 TempPlace = (g_CurMousePos.x - StringRect.left) * (nEnd - nBegin + 1) / (StringRect.right - StringRect.left);//鼠标到矩形框左边的长度（占几个字符）
+			 GetStringRect(hDC, szBuff, TempPlace,     x, y, &CaretPrevRect, lpDx);//鼠标到矩形左边框
 			 GetStringRect(hDC, szBuff, TempPlace + 1, x, y, &CaretNextRect, lpDx);
-			 
+			 //判断鼠标聚焦的是上个矩形框还是下个矩形框，具体规则是在CalcCaretInThisPlace中定义的-3到1的范围
 			 if (CalcCaretInThisPlace(g_CurMousePos.x, CaretPrevRect.right)) 
 			 {
 			 	g_nCurCaretPlace = TempPlace - nBegin;
@@ -1347,7 +1354,7 @@ DWORD GetEngLishCaretPlaceW(HDC   hDC,
 	
 	return 0;
 }
-
+//判断鼠标是否聚焦字
 BOOL CalcCaretInThisPlace(int CaretX, double nPlace)
 {
 /*	if ((double)CaretX == nPlace)
@@ -1355,7 +1362,7 @@ BOOL CalcCaretInThisPlace(int CaretX, double nPlace)
 		return TRUE;
 	}
 */	
-	if (((double)CaretX >= nPlace - 3)&&((double)CaretX <= nPlace + 1))
+	if (((double)CaretX >= nPlace - 3)&&((double)CaretX <= nPlace + 1))//-3到1的范围
 	{
 		return TRUE;
 	}
