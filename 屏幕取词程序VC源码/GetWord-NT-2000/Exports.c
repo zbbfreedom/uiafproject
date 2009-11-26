@@ -33,7 +33,7 @@ BOOL g_bNewGetWordFlag = FALSE;		//must share
 
 char g_szTotalWord[BUFFERLENGTH] = "";	//must share
 RECT g_TotalWordRect = {0,0,0,0};			// ノ癘魁Ч俱迭跋办must share
-
+//当前鼠标下面是不是本次取到的所有词
 int  g_bMouseInTotalWord = FALSE;           // ノ癘魁夹琌Ч俱迭いmust share
 int  g_nCurCaretPlaceInTotalWord = -1;		// ノ癘魁夹Ч俱迭い竚must share
 RECT g_rcFirstWordRect = {0,0,0,0};	//must share
@@ -693,7 +693,7 @@ DLLEXPORT BOOL WINAPI NHTextOutW(HDC hdc,
 
 //Hook TextOutA的过程
 DLLEXPORT BOOL WINAPI NHExtTextOutA(HDC hdc,
-								    int X,
+								    int X,	//当前需要绘制的文本的起始位置
 								    int Y,
 								    UINT fuOptions,
 								    CONST RECT *lprc,
