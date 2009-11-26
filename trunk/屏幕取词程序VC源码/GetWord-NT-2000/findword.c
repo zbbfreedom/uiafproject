@@ -68,6 +68,12 @@ extern int g_nGetWordStyle;
 /**************************************************************************
 **************************************************************************/
 //获取字符类型
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：GetCharType 
+// 函数参数：char ch:需要检验的字符
+// 返 回 值：int：字符类型的宏定义 
+// 函数说明：检验ch的字符类型 
+// $_FUNCTION_END ********************************
 __inline int  GetCharType(char ch)
 {
 	BYTE chitem = ch;
@@ -107,6 +113,14 @@ __inline int  FindAWord(LPCSTR lpString, int nFromPlace, int nLength)
 	//Modified end
 }
 //为了获得lpString里连续英文字符的最后一个位置，nFromPlace是起始位置，nLength是解析长度。
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：FindDWord 
+// 函数参数：LPCSTR lpString：一串字符
+//			 int nFromPlace：开始点
+//			 int nLength：字符长度
+// 返 回 值：int：单词长度 
+// 函数说明：解析出一个不含‘_’的单词 
+// $_FUNCTION_END ********************************
 __inline int  FindDWord(LPCSTR lpString, int nFromPlace, int nLength)
 {
 	int i = nFromPlace;
@@ -118,13 +132,21 @@ __inline int  FindDWord(LPCSTR lpString, int nFromPlace, int nLength)
 		}
 		else
 		{
-			return i-1;非CHAR_TYPE_ASCII的话，当前位置-1并返回
+			return i-1;//非CHAR_TYPE_ASCII的话，当前位置-1并返回
 		}
 	} 
 	
 	return nLength - 1;
 }
 //这个和FindDWord类似，也是为了获取连续英文字符的最后一个位置，只不过常量字符串lpString为包含'-'的情况
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：FindTWWord 
+// 函数参数：LPCSTR lpString：一串字符
+//			 int nFromPlace：开始点
+//			 int nLength：字符长度
+// 返 回 值：int：单词长度 
+// 函数说明：解析出一个含‘_’的单词 
+// $_FUNCTION_END ********************************
 __inline int  FindTWWord(LPCSTR lpString, int nFromPlace, int nLength)
 {
 	int i = nFromPlace;
@@ -139,7 +161,7 @@ __inline int  FindTWWord(LPCSTR lpString, int nFromPlace, int nLength)
 			}
 			else
 			{
-				return i-1;不是的话返回i-1
+				return i-1;//不是的话返回i-1
 			}
 		}
 		else//对于当前的位置不是'-'字符的话，判断当前位置
@@ -158,6 +180,15 @@ __inline int  FindTWWord(LPCSTR lpString, int nFromPlace, int nLength)
 	return nLength - 1;
 }
 //判断是否是英文字符，实际就调用了GetCharType方法而已，感觉nFromPlace和nLength这两个参数多余
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：IsASCIIWord 
+// 函数参数：LPCSTR lpString：一串字符
+//			 int nFromPlace：没用
+//			 int nLength：没用
+//			 int nCurCharNum：需要检验的字符所在位置
+// 返 回 值：TRUE：是字母，FALSE：不是字母 
+// 函数说明：检验lpString中的某个字符是否是字母 
+// $_FUNCTION_END ********************************
 __inline BOOL IsASCIIWord(LPCSTR lpString, int nFromPlace, int nLength, int nCurCharNum)
 {
 	if (GetCharType(lpString[nCurCharNum]) == CHAR_TYPE_ASCII)
@@ -168,6 +199,14 @@ __inline BOOL IsASCIIWord(LPCSTR lpString, int nFromPlace, int nLength, int nCur
 	return FALSE;
 }
 //获取连续中文字符的最后位置（与FindDWord功能类似）
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：FindHZWord 
+// 函数参数：LPCSTR lpString：一串字符
+//			 int nFromPlace：开始点
+//			 int nLength：字符长度
+// 返 回 值：int：单词长度 
+// 函数说明：解析出一个中文 
+// $_FUNCTION_END ********************************
 __inline int  FindHZWord(LPCSTR lpString, int nFromPlace, int nLength)
 {
 	int i = nFromPlace;//起始位置
@@ -243,6 +282,23 @@ __inline void CopyWord(LPSTR lpWord, LPCSTR lpString, int nBegin, int nEnd)
 	}
 	lpWord[nEnd - nBegin + 1] = '\0';//指定字符串结尾
 }
+
+/*
+//Xianfeng
+TA_BASELINE：基准点在正文的基线上。
+TA_BOTTOM：基准点在限定矩形的下边界上。
+TA_TOP：基准点在限定矩形的上边界上。
+TA_CENTER：基准点与限定矩形的中心水平对齐。
+TA_LEFT：基准点在限定矩形的左边界上。
+TA_RIGHT：基准点在限定矩形的右边界上。
+TA_RTLREADING：对于中东Windows版，正文从右到左的阅读顺序排列，与缺省的从左到右正好相反。只有当被选择的字体是Hebrew或Arabic时，此值才有用。
+TA_NOUPDATECP：每次输出调用后当前状态不改变。
+TA_UPDATECP：每次输出调用后当前状态改变。
+若当前字体有一条缺省的垂直基线（如Kanji），下列值用于取代TA_BASELINE和TA_CENTER，各值含义为：
+VTA_BASELINE：基准点在正文的基线上。
+VTA_CENTER：基准点与限定矩形的中心垂直对齐。
+//Xianfeng
+*/
 //获取当前的绘制矩形的纵向位置（应该就是我们重绘的位置）
 void GetStringTopBottom(HDC hDC, int y, RECT* lpStringRect)
 {
@@ -251,6 +307,7 @@ void GetStringTopBottom(HDC hDC, int y, RECT* lpStringRect)
 	WndPos.y = g_dwDCOrg.y;//注：g_dwDCOrg这个点也是在Exports.c中定义的，初始为{0,0}
 
     if (TA_UPDATECP & g_nTextAlign)//注g_nTextAlign是在Exports.c中定义的，初始化为0。//判断文本对齐模式是否为TA_UPDATECP以及g_nTextAlign
+	//Xianfeng:判断文字的对齐方式是否含有TA_UPDATECP，如果文本对齐模式是TA_UPDATECP的话，TextOut忽略坐标参数，而在当前位置绘制文本
     {
     	y = g_CurPos.y;//在当前位置重绘，g_CurPos在Exports.c中定义
     }
@@ -272,6 +329,7 @@ void GetStringTopBottom(HDC hDC, int y, RECT* lpStringRect)
 			 break;
 	}
 	
+	//Xianfeng:把逻辑坐标转换为DC设备坐标
 	LPtoDP(hDC, (LPPOINT)lpStringRect, 2);//对上面求的的逻辑坐标进行转换
 
 	lpStringRect->top    = lpStringRect->top    + WndPos.y;
@@ -1611,6 +1669,17 @@ void AddToTotalWord(LPSTR szBuff,
 */
 }
 
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：AddToTextOutBuffer 
+// 函数参数：HDC hMemDC:对方的DC
+//			 LPSTR szBuff:截获的文本
+//			 int cbLen:截获的文本长度
+//			 int x:截获文本输出的x坐标
+//			 int y:截获文本输出的y坐标
+//			 CONST INT *lpDx:
+// 返 回 值： 
+// 函数说明： 
+// $_FUNCTION_END ********************************
 void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST INT *lpDx)
 {
 	int  nPrevWord, nCurrentWord, CharType;
@@ -1629,9 +1698,9 @@ void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST
 	}
 
 	nLen = strlen(szMemDCWordBuff);
-	strncpy(szMemDCWordBuff + nLen, szBuff, cbLen);
-	szMemDCWordBuff[nLen + cbLen    ] = ' ';
-	szMemDCWordBuff[nLen + cbLen + 1] = 0x00;
+	strncpy(szMemDCWordBuff + nLen, szBuff, cbLen);		//Xianfeng:将截获的文本拷贝到缓冲中
+	szMemDCWordBuff[nLen + cbLen    ] = ' ';			//Xianfeng:添加‘ ’作为间隔符
+	szMemDCWordBuff[nLen + cbLen + 1] = 0x00;			//Xianfeng:？
 
 	nPrevWord = nCurrentWord = -1;
 
@@ -1680,7 +1749,12 @@ void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST
 //Created due to fixing bug5: get word position error sometimes
 //Author: Zhang Haining
 //Date: 01/19/2000
-
+// $_FUNCTION_BEGIN ******************************
+// 函数名称：AddToTextOutBufferW 
+// 函数参数：
+// 返 回 值： 
+// 函数说明： 
+// $_FUNCTION_END ********************************
 void AddToTextOutBufferW(HDC hMemDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, int y, CONST INT *lpDx)
 {
 	int  nPrevWord, nCurrentWord, CharType;

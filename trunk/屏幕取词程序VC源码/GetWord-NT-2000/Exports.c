@@ -542,25 +542,27 @@ DLLEXPORT BOOL WINAPI NHTextOutA(HDC hdc,
 	//
 	pt.x = g_CurMousePos.x;
 	pt.y = g_CurMousePos.y;
-	hWDC = WindowFromDC(hdc);
-	hWPT = WindowFromPoint(pt);
+	hWDC = WindowFromDC(hdc);	//Xianfeng:对方所在窗体句柄
+	hWPT = WindowFromPoint(pt);	//Xianfeng:鼠标所在窗体句柄
 
-	dwThreadIdWithPoint = GetWindowThreadProcessId(hWPT, NULL);
-	dwThreadIdCurr = GetCurrentThreadId();
+	dwThreadIdWithPoint = GetWindowThreadProcessId(hWPT, NULL);	//Xianfeng:取得鼠标所在窗体线程ID
+	dwThreadIdCurr = GetCurrentThreadId();		//Xianfeng:取得当前线程ID
 
 	if(dwThreadIdWithPoint == dwThreadIdCurr)
 	{
-		if (hWDC == NULL || hWPT == hWDC
-			|| IsParentOrSelf(hWPT, hWDC)
+		if (hWDC == NULL 
+			|| hWPT == hWDC
+			|| IsParentOrSelf(hWPT, hWDC)	
 			|| IsParentOrSelf(hWDC, hWPT))
 		{
-			if ((g_bAllowGetCurWord) && (!IsBadReadPtr(lpString, cbString))
+			if ((g_bAllowGetCurWord) 
+				&& (!IsBadReadPtr(lpString, cbString))
 				&& (cbString > 0))
 			{
-					g_nTextAlign = GetTextAlign(hdc);
-					g_nExtra     = GetTextCharacterExtra(hdc);
-					GetCurrentPositionEx(hdc, &g_CurPos);
-					GetTextMetrics(hdc, &g_tm);
+					g_nTextAlign = GetTextAlign(hdc);			//Xianfeng:取得当前DC的文本对齐方式，在后面计算矩形用
+					g_nExtra     = GetTextCharacterExtra(hdc);	//Xianfeng:取得字符间空隙，单位估计是像素
+					GetCurrentPositionEx(hdc, &g_CurPos);		//Xianfeng:取得当前DC的逻辑位置
+					GetTextMetrics(hdc, &g_tm);					//Xianfeng:取得当前DC的font的基本信息
         
 					g_dwDCOrg.x = 0;
 					g_dwDCOrg.y = 0;
@@ -579,7 +581,8 @@ DLLEXPORT BOOL WINAPI NHTextOutA(HDC hdc,
 					}
 					else
 					{
-							GetDCOrgEx(hdc, &g_dwDCOrg);
+						//Xianfeng:取回DC原点，通常的值是客户区左上角相对于窗体左上角的偏移量
+							GetDCOrgEx(hdc, &g_dwDCOrg);	
         
 							GetCurMousePosWord(hdc, (LPSTR)lpString, cbString,
 											   nXStart, nYStart, NULL);
