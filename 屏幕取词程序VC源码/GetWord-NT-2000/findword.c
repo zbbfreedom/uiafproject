@@ -68,7 +68,7 @@ extern int g_nGetWordStyle;
 /**************************************************************************
 **************************************************************************/
 //获取字符类型
-// $_FUNCTION_BEGIN ******************************
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
 // 函数名称：GetCharType 
 // 函数参数：char ch:需要检验的字符
 // 返 回 值：int：字符类型的宏定义 
@@ -113,7 +113,7 @@ __inline int  FindAWord(LPCSTR lpString, int nFromPlace, int nLength)
 	//Modified end
 }
 //为了获得lpString里连续英文字符的最后一个位置，nFromPlace是起始位置，nLength是解析长度。
-// $_FUNCTION_BEGIN ******************************
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
 // 函数名称：FindDWord 
 // 函数参数：LPCSTR lpString：一串字符
 //			 int nFromPlace：开始点
@@ -138,8 +138,9 @@ __inline int  FindDWord(LPCSTR lpString, int nFromPlace, int nLength)
 	
 	return nLength - 1;
 }
+
 //这个和FindDWord类似，也是为了获取连续英文字符的最后一个位置，只不过常量字符串lpString为包含'-'的情况
-// $_FUNCTION_BEGIN ******************************
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
 // 函数名称：FindTWWord 
 // 函数参数：LPCSTR lpString：一串字符
 //			 int nFromPlace：开始点
@@ -179,8 +180,9 @@ __inline int  FindTWWord(LPCSTR lpString, int nFromPlace, int nLength)
 	
 	return nLength - 1;
 }
+
 //判断是否是英文字符，实际就调用了GetCharType方法而已，感觉nFromPlace和nLength这两个参数多余
-// $_FUNCTION_BEGIN ******************************
+// $_FUNCTION_BEGIN ******************************		//Xianfeng:
 // 函数名称：IsASCIIWord 
 // 函数参数：LPCSTR lpString：一串字符
 //			 int nFromPlace：没用
@@ -198,8 +200,9 @@ __inline BOOL IsASCIIWord(LPCSTR lpString, int nFromPlace, int nLength, int nCur
 
 	return FALSE;
 }
+
 //获取连续中文字符的最后位置（与FindDWord功能类似）
-// $_FUNCTION_BEGIN ******************************
+// $_FUNCTION_BEGIN ******************************		//Xianfeng:
 // 函数名称：FindHZWord 
 // 函数参数：LPCSTR lpString：一串字符
 //			 int nFromPlace：开始点
@@ -335,6 +338,7 @@ void GetStringTopBottom(HDC hDC, int y, RECT* lpStringRect)
 	lpStringRect->top    = lpStringRect->top    + WndPos.y;
 	lpStringRect->bottom = lpStringRect->bottom + WndPos.y;
 }
+
 //获取绘制矩形的横向位置。
 void GetStringLeftRight(HDC hDC, LPSTR szBuff, int cbLen, int x, RECT* lpStringRect, CONST INT *lpDx)
 {
@@ -681,6 +685,7 @@ void GetStringRectW(HDC hDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, int
 	lpStringRect->left   = lpStringRect->left   + WndPos.x;
 	lpStringRect->right  = lpStringRect->right  + WndPos.x;
 }
+
 //获取当前鼠标下的字
 DWORD GetCurMousePosWord(HDC   hDC, 
 						 LPSTR szBuff, 
@@ -858,6 +863,7 @@ DWORD GetCurMousePosWordW(HDC   hDC,
 	//return NO_CURMOUSEWORD;
 	return dwResult;	//Modified by ZHHN on 2000.4
 }
+
 //当前鼠标是否聚焦在字符串上
 DWORD CheckMouseInCurWord(HDC   hDC, 
 						  LPSTR szBuff, 
@@ -1059,6 +1065,7 @@ DWORD CheckMouseInCurWordW(HDC   hDC,
 
 	return NO_CURMOUSEWORD;   
 }
+
 //鼠标聚焦的矩形块的位置
 DWORD CalculateCaretPlace(HDC   hDC, 
 						  LPSTR szBuff, 
@@ -1669,16 +1676,16 @@ void AddToTotalWord(LPSTR szBuff,
 */
 }
 
-// $_FUNCTION_BEGIN ******************************
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
 // 函数名称：AddToTextOutBuffer 
 // 函数参数：HDC hMemDC:对方的DC
 //			 LPSTR szBuff:截获的文本
 //			 int cbLen:截获的文本长度
 //			 int x:截获文本输出的x坐标
 //			 int y:截获文本输出的y坐标
-//			 CONST INT *lpDx:
+//			 CONST INT *lpDx:是否设置了字符间距
 // 返 回 值： 
-// 函数说明： 
+// 函数说明：保存输出字符信息到内存 
 // $_FUNCTION_END ********************************
 void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST INT *lpDx)
 {
@@ -1706,18 +1713,22 @@ void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST
 
 	GetStringRect(hMemDC, szBuff, nPrevWord + 1, x, y, &PrevWordRect, lpDx);//zhhn
 
+	//Xianfeng:循环拆分该字符串中的所有单元（单词、汉字和特殊字符），
+	//Xianfeng:并将所有单元在该串中的始末位置、HDC、类型、RECT等信息存到WordBuffer这个信息数组中
 	while (nCurrentWord < cbLen)
 	{
 		if (nWordNum >= MEMDC_MAXNUM)
 			break;
 
-		CharType     = GetCharType(szBuff[nCurrentWord + 1]);
-		nPrevWord    = nCurrentWord;
-		nCurrentWord = GetCurWordEnd(szBuff, nPrevWord + 1, cbLen, CharType);
+		CharType     = GetCharType(szBuff[nCurrentWord + 1]);	//Xianfeng:单元类型
+		nPrevWord    = nCurrentWord;		//Xianfeng:单元起点
+		nCurrentWord = GetCurWordEnd(szBuff, nPrevWord + 1, cbLen, CharType);	//Xianfeng:单元终点
 
 		//GetStringRect(hMemDC, szBuff, nPrevWord + 1, x, y, &PrevWordRect, lpDx);//modified by zhhn
+		//Xianfeng:取得该单元的RECT
 		GetStringRect(hMemDC, szBuff, nCurrentWord + 1 , x, y, &NextWordRect, lpDx);
 		
+		//Xianfeng:存储该单元信息
 		WordBuffer[nWordNum].nBegin = nLen + nPrevWord + 1;
 		WordBuffer[nWordNum].nEnd   = nLen + nCurrentWord;
 		WordBuffer[nWordNum].hMemDC = hMemDC;
@@ -1735,6 +1746,7 @@ void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST
 			break;
 	}
 	
+	//Xianfeng:计算该单元中每个字符的宽度并保存到pnMemDCCharLeft和pnMemDCCharRight这两个数组中，这样，鼠标能精准到单元的某个字符
 	GetStringLeftRight(hMemDC, szBuff, 0, x, &PrevWordRect, lpDx);
 	for (i = 0; i < cbLen; i++)
 	{
@@ -1749,12 +1761,7 @@ void AddToTextOutBuffer(HDC hMemDC, LPSTR szBuff, int cbLen, int x, int y, CONST
 //Created due to fixing bug5: get word position error sometimes
 //Author: Zhang Haining
 //Date: 01/19/2000
-// $_FUNCTION_BEGIN ******************************
-// 函数名称：AddToTextOutBufferW 
-// 函数参数：
-// 返 回 值： 
-// 函数说明： 
-// $_FUNCTION_END ********************************
+//Xianfeng:类似AddToTextOutBuffer
 void AddToTextOutBufferW(HDC hMemDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, int y, CONST INT *lpDx)
 {
 	int  nPrevWord, nCurrentWord, CharType;
@@ -1836,6 +1843,14 @@ void AddToTextOutBufferW(HDC hMemDC, LPCWSTR lpWideCharStr, UINT cbWideChars, in
 	}
 }
 
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：GetMemWordStringRect 
+// 函数参数：int nWordCode：单元ID
+//			 int nOffset：单元中第几个字母，-1整个单元
+//			 LPRECT lpStringRect：输出单元或其中某个字母的RECT
+// 返 回 值：int：整个单元或单个字母长度 
+// 函数说明：取得整个单元或单个字母长度
+// $_FUNCTION_END ********************************
 void GetMemWordStringRect(int nWordCode, int nOffset, LPRECT lpStringRect)
 {
 	POINT  WndPos;
@@ -1852,7 +1867,7 @@ void GetMemWordStringRect(int nWordCode, int nOffset, LPRECT lpStringRect)
 	}
 	
 	CopyRect(lpStringRect, &(WordBuffer[nWordCode].wordRect));
-	if (nOffset != MEMDC_TOTALWORD)
+	if (nOffset != MEMDC_TOTALWORD)		//Xianfeng:只取该单元偏移为nOffset的字符的区域
 	{
 		nNum = WordBuffer[nWordCode].nBegin + nOffset;
 		lpStringRect->left = pnMemDCCharLeft[nNum];
@@ -1862,12 +1877,20 @@ void GetMemWordStringRect(int nWordCode, int nOffset, LPRECT lpStringRect)
 	WndPos.x = g_dwDCOrg.x;
 	WndPos.y = g_dwDCOrg.y;
 	
+	//Xianfeng:转换成屏幕坐标
 	lpStringRect->top    = lpStringRect->top    + WndPos.y;
 	lpStringRect->bottom = lpStringRect->bottom + WndPos.y;
 	lpStringRect->left   = lpStringRect->left   + WndPos.x;
 	lpStringRect->right  = lpStringRect->right  + WndPos.x;
 }
 
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：CheckMemDCWordBuffer 
+// 函数参数：HDC hdcdest：目的DC
+//			 HDC hdcSrc：源DC
+// 返 回 值： 
+// 函数说明：检测贴图的DC上是否有文字输出，检测方法是和Hook到有文字输出的DC做对比 
+// $_FUNCTION_END ********************************
 void CheckMemDCWordBuffer(HDC hdcdest, HDC hdcSrc)
 {
 	int i;
@@ -1875,8 +1898,10 @@ void CheckMemDCWordBuffer(HDC hdcdest, HDC hdcSrc)
 	
 	for (i = 0; i < nWordNum; i++)
 	{
+		//Xianfeng:对比DC
 		if (WordBuffer[i].hMemDC == hdcSrc)
 		{
+			//Xianfeng:检测鼠标是否在该单元上
 			dwReturn = CheckMouseInMemDCWord(i);
 		}
 		else
@@ -1899,6 +1924,13 @@ void CheckMemDCWordBuffer(HDC hdcdest, HDC hdcSrc)
 	}                               
 }
 
+
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：FindTWWord 
+// 函数参数：HDC hDC：待查DC
+// 返 回 值：BOOL，TRUE：一致，FALSE：不一致
+// 函数说明：检测DC所在窗体的名字是否和对象所在类一致
+// $_FUNCTION_END ********************************
 __inline BOOL CheckDCWndClassName(HDC hDC)
 {
 	HWND hWndFromDC;
@@ -1918,12 +1950,21 @@ __inline BOOL CheckDCWndClassName(HDC hDC)
 	return FALSE;
 }
 
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：CheckMouseInMemDCWord 
+// 函数参数：int nWordCode：单元ID
+// 返 回 值：DWORD，HAS_CURMOUSEWORD：当前鼠标在字上	
+//					NO_CURMOUSEWORD：不在字上
+// 函数说明：检测当前鼠标是否在该单元上，并且该单元是否有内容 
+// $_FUNCTION_END ********************************
 DWORD CheckMouseInMemDCWord(int nWordCode)
 {
 	RECT  StringRect;
 
+	//Xianfeng:取得nWordCode的单元整个RECT
 	GetMemWordStringRect(nWordCode, MEMDC_TOTALWORD, &StringRect);
 
+	//Xianfeng:如果鼠标在该单元内
 	if (  (StringRect.left   <= g_CurMousePos.x)
 		&&(StringRect.right  >= g_CurMousePos.x)
 		&&(StringRect.top    <= g_CurMousePos.y)
@@ -1931,6 +1972,7 @@ DWORD CheckMouseInMemDCWord(int nWordCode)
 	{
 		switch (WordBuffer[nWordCode].CharType)
 		{
+			//Xianfeng:如果类型是汉字或字母，拷贝到当前单元g_szCurWord，成为最终结果
 			case CHAR_TYPE_HZ:
 			case CHAR_TYPE_ASCII:
 				 CopyWord(g_szCurWord, szMemDCWordBuff, WordBuffer[nWordCode].nBegin, WordBuffer[nWordCode].nEnd);
@@ -1943,9 +1985,12 @@ DWORD CheckMouseInMemDCWord(int nWordCode)
 				 CalculateCaretPlaceInMemDCWord(nWordCode);
 				 
 				 break;
+			//Xianfeng:如果类型是其他字符，不考虑
 			case CHAR_TYPE_OTHER:
 				 break;
 		}
+
+		//Xianfeng:添加到整个词中
 		AddToTotalWord(szMemDCWordBuff, 
 						0,  // Ignor
 						WordBuffer[nWordCode].nBegin, 
@@ -1973,6 +2018,7 @@ DWORD CheckMouseInMemDCWord(int nWordCode)
 	{
 	}
 
+	//Xianfeng:添加到整个词中
 	AddToTotalWord(szMemDCWordBuff, 
 				   0,  // Ignor
 				   WordBuffer[nWordCode].nBegin, 
@@ -1984,6 +2030,12 @@ DWORD CheckMouseInMemDCWord(int nWordCode)
 	return NO_CURMOUSEWORD;   
 }
 
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：CalculateCaretPlaceInMemDCWord 
+// 函数参数：int nWordCode：单元ID
+// 返 回 值：DWORD， 是：返回1，否：返回0
+// 函数说明：记录鼠标是否在nWordCode这个单元里，是：返回1，否：返回0
+// $_FUNCTION_END ********************************
 DWORD CalculateCaretPlaceInMemDCWord(int nWordCode)
 {
 	RECT  StringRect;
@@ -1996,25 +2048,32 @@ DWORD CalculateCaretPlaceInMemDCWord(int nWordCode)
 		return 0L;
 	}
 
+	//Xianfeng:取得该单元的整个RECT
 	GetMemWordStringRect(nWordCode, MEMDC_TOTALWORD, &StringRect);
 	
+	//Xianfeng:如果鼠标在该单元最左边，说明在该单元上，返回1
 	if (CalcCaretInThisPlace(g_CurMousePos.x, StringRect.left))
 	{
 		g_nCurCaretPlace = 0;
 		return 0l;
 	}
 
+	//Xianfeng:如果鼠标在该单元最右边，说明在该单词上，返回1
 	if (CalcCaretInThisPlace(g_CurMousePos.x, StringRect.right))
 	{
 		g_nCurCaretPlace = WordBuffer[nWordCode].nEnd - WordBuffer[nWordCode].nBegin + 1;
 		return 0l;
 	}
 	
+	//Xianfeng:从头到尾遍历该单元
 	for (i = WordBuffer[nWordCode].nBegin; i <= WordBuffer[nWordCode].nEnd; i++)
 	{
+		//Xianfeng:取得该单元的部分区域
 		GetMemWordStringRect(nWordCode, i - WordBuffer[nWordCode].nBegin, &StringRect);
+		//Xianfeng:检测当前鼠标是否在该区域中
 		if (CalcCaretInThisPlace(g_CurMousePos.x, StringRect.right))
 		{
+			//Xianfeng:记录鼠标所在该单元中的位置
 			g_nCurCaretPlace = i - WordBuffer[nWordCode].nBegin + 1;
 			return 0l;
 		}
