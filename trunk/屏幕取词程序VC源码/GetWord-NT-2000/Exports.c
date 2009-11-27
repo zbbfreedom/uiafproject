@@ -475,7 +475,7 @@ DLLEXPORT BOOL WINAPI NHBitBlt(HDC hdcDest,
 
 	if (hWPT == hWDC) //added by zhhn 01/17/2000
 	{
-		if (nWidth > 5)
+		if (nWidth > 5)	//Xianfeng:大于5估计能放下字符
 		{
 				GetDCOrgEx(hdcDest, &g_dwDCOrg);
 				x = g_dwDCOrg.x;
@@ -576,6 +576,7 @@ DLLEXPORT BOOL WINAPI NHTextOutA(HDC hdc,
 							g_dwDCOrg.x = 0;
 							g_dwDCOrg.y = 0;
 
+							//Xianfeng:保存输出字符信息到内存
 							AddToTextOutBuffer(hdc, (LPSTR)lpString, cbString,
 											   nXStart, nYStart, NULL);
 					}
