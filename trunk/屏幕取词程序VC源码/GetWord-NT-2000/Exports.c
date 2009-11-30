@@ -582,9 +582,10 @@ DLLEXPORT BOOL WINAPI NHTextOutA(HDC hdc,
 					}
 					else
 					{
-						//Xianfeng:取回DC原点，通常的值是客户区左上角相对于窗体左上角的偏移量
+							//Xianfeng:取回DC原点，通常的值是客户区左上角相对于窗体左上角的偏移量
 							GetDCOrgEx(hdc, &g_dwDCOrg);	
         
+							//Xianfeng:获取当前鼠标下的字
 							GetCurMousePosWord(hdc, (LPSTR)lpString, cbString,
 											   nXStart, nYStart, NULL);
 					}
