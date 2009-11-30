@@ -303,6 +303,14 @@ VTA_CENTER：基准点与限定矩形的中心垂直对齐。
 //Xianfeng
 */
 //获取当前的绘制矩形的纵向位置（应该就是我们重绘的位置）
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：GetStringTopBottom 
+// 函数参数：HDC hDC:对方的DC
+//			 int y:截获文本输出的y坐标
+//			 RECT* lpStringRect:输出RECT，主要用来保存字符高度
+// 返 回 值： 
+// 函数说明：根据字符的对齐方式计算出字符的top和bottom坐标 
+// $_FUNCTION_END ********************************
 void GetStringTopBottom(HDC hDC, int y, RECT* lpStringRect)
 {
 	POINT  WndPos;
@@ -687,6 +695,17 @@ void GetStringRectW(HDC hDC, LPCWSTR lpWideCharStr, UINT cbWideChars, int x, int
 }
 
 //获取当前鼠标下的字
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：GetCurMousePosWord 
+// 函数参数：HDC   hDC:对方的DC
+//			 LPSTR szBuff:截获的文本
+//			 int cbLen:截获的文本长度
+//			 int x:截获文本输出的x坐标
+//			 int y:截获文本输出的y坐标
+//			 CONST INT *lpDx:是否设置了字符间距
+// 返 回 值： 
+// 函数说明：获取当前鼠标下的字 
+// $_FUNCTION_END ********************************
 DWORD GetCurMousePosWord(HDC   hDC, 
 						 LPSTR szBuff, 
 						 int   cbLen, 
@@ -710,23 +729,28 @@ DWORD GetCurMousePosWord(HDC   hDC,
 	}
 */
 	//矩形的纵向位置
+	//Xianfeng:根据字符的对齐方式计算出字符的top和bottom坐标 
 	GetStringTopBottom(hDC, y, &StringRect);
 
 	//矩形的纵向位置与当前鼠标位置进行判断，但是判断逻辑有点不明白（感觉弄反了。。）
+	//Xianfeng:判断鼠标位置是否在字符的纵向范围内，如果没有，证明鼠标没在字上，没弄反:)
 	if ((StringRect.top > g_CurMousePos.y) || (StringRect.bottom < g_CurMousePos.y))
 	{
 		return NO_CURMOUSEWORD;
 	}
+
 	//调用前面获取矩形位置的方法
 	GetStringRect(hDC, szBuff, cbLen, x, y, &StringRect, lpDx);
 	nLeft = StringRect.left;
 
 	nPrevWord = nCurrentWord = -1;//当前字和前一字都记为-1
+	//Xianfeng:循环检测当前鼠标在该句字符串的哪个单元上
 	while (nCurrentWord < cbLen)
 	{
 		CharType     = GetCharType(szBuff[nCurrentWord + 1]);//先获取下一字的类型
 		nPrevWord    = nCurrentWord;
 		nCurrentWord = GetCurWordEnd(szBuff, nPrevWord + 1, cbLen, CharType);//获取连续类型相同的字符的最后一个位置
+		//Xianfeng:检测当前鼠标下是否有单元
 		dwReturn     = CheckMouseInCurWord(hDC, szBuff, cbLen, x, y, lpDx, &nLeft, nPrevWord + 1, nCurrentWord, CharType);
 /*
 		if (cbLen != 0)
@@ -737,7 +761,7 @@ DWORD GetCurMousePosWord(HDC   hDC,
 			OutputDebugString(cBuffer);
 		}
 */
-		if (dwReturn == HAS_CURMOUSEWORD)
+		if (dwReturn == HAS_CURMOUSEWORD)	//Xianfeng:
 		{
 			if (CharType == CHAR_TYPE_OTHER)
 			{
@@ -865,6 +889,22 @@ DWORD GetCurMousePosWordW(HDC   hDC,
 }
 
 //当前鼠标是否聚焦在字符串上
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：CheckMouseInCurWord 
+// 函数参数：HDC   hDC:对方的DC
+//			 LPSTR szBuff:截获的文本
+//			 int cbLen:截获的文本长度
+//			 int x:截获文本输出的x坐标
+//			 int y:截获文本输出的y坐标
+//			 CONST INT *lpDx:是否设置了字符间距
+//			 int*  lpLeft:当前字符串RECT的x坐标
+//			 int   nBegin:当前单元开始位置
+//			 int   nEnd:当前单元结束位置
+//			 int   nCharType:当前单元类型
+// 返 回 值：DWORD:HAS_CURMOUSEWORD:当前鼠标下有单元
+//				   NO_CURMOUSEWORD:当前鼠标下没单元	
+// 函数说明：检测当前鼠标下是否有单元 
+// $_FUNCTION_END ********************************
 DWORD CheckMouseInCurWord(HDC   hDC, 
 						  LPSTR szBuff, 
 						  int   cbLen, 
@@ -878,9 +918,11 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 {
 	RECT  StringRect;
 
+	//Xianfeng:取得整个单元的RECT
 	GetStringRect(hDC, szBuff, nEnd + 1, x, y, &StringRect, lpDx);
 	StringRect.left = *lpLeft;
 	*lpLeft = StringRect.right;
+
 /*
 	if (cbLen != 0)
 	{
@@ -892,8 +934,8 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 	}
 */
 	if (  ((g_CurMousePos.x >= StringRect.left    ) && (g_CurMousePos.x <= StringRect.right))//鼠标横坐标在字符串宽度之内
-	    || (g_CurMousePos.x == StringRect.left - 1)//只有一个字的情况
-	    || (g_CurMousePos.x == StringRect.right + 1))
+	    || (g_CurMousePos.x == StringRect.left - 1)//只有一个字的情况 //Xianfeng:在单元的左边缘
+	    || (g_CurMousePos.x == StringRect.right + 1))	//Xianfeng:在单元的右边缘
 	{
 /*
 		{
@@ -907,8 +949,8 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 		{
 			case CHAR_TYPE_HZ:
 			case CHAR_TYPE_ASCII:
-				 CopyWord(g_szCurWord, szBuff, nBegin, nEnd);//复制字符串
-				 g_CurWordRect.left   = StringRect.left;//应该是制定重绘的范围
+				 CopyWord(g_szCurWord, szBuff, nBegin, nEnd);//复制字符串	
+				 g_CurWordRect.left   = StringRect.left;//应该是制定重绘的范围	
 				 g_CurWordRect.right  = StringRect.right;
 				 g_CurWordRect.top    = StringRect.top;
 				 g_CurWordRect.bottom = StringRect.bottom;
@@ -921,6 +963,7 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 				}
 */
 				 g_nCurCaretPlace = -1;
+				//Xianfeng: 计算g_nCurCaretPlace在哪个汉字或哪个单词的某个字母上
 				 CalculateCaretPlace(hDC, 
 									 szBuff, 
 									 cbLen,
@@ -939,7 +982,7 @@ DWORD CheckMouseInCurWord(HDC   hDC,
 
 		AddToTotalWord(szBuff, cbLen, nBegin, nEnd, nCharType, StringRect, TRUE);
 
-		if (  (nCharType == CHAR_TYPE_OTHER)
+		if ((nCharType == CHAR_TYPE_OTHER)
 		    &&(CalcCaretInThisPlace(g_CurMousePos.x, StringRect.right)))
 		{
 			return HAS_CURMOUSEWORD;
@@ -1067,6 +1110,21 @@ DWORD CheckMouseInCurWordW(HDC   hDC,
 }
 
 //鼠标聚焦的矩形块的位置
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：CalculateCaretPlace 
+// 函数参数：HDC   hDC:对方的DC
+//			 LPSTR szBuff:截获的文本
+//			 int cbLen:截获的文本长度
+//			 int x:截获文本输出的x坐标
+//			 int y:截获文本输出的y坐标
+//			 CONST INT *lpDx:是否设置了字符间距
+//			 int   nBegin:当前单元开始位置
+//			 int   nEnd:当前单元结束位置
+//			 int   nCharType:当前单元类型
+// 返 回 值：DWORD:0L:计算成功
+//				   01:计算成功	
+// 函数说明：计算g_nCurCaretPlace在哪个汉字或哪个单词的某个字母上 
+// $_FUNCTION_END ********************************
 DWORD CalculateCaretPlace(HDC   hDC, 
 						  LPSTR szBuff, 
 						  int   cbLen, 
@@ -1089,10 +1147,13 @@ DWORD CalculateCaretPlace(HDC   hDC,
 		return 0L;
 	}
 	//下面是获取相邻的两个矩形的位置（区分矩形是根据字符类型）
+	//Xianfeng:取得字符串开始到单元开始的RECT
 	GetStringRect(hDC, szBuff, nBegin, x, y, &BeginRect, lpDx);
-	
+	//Xianfeng:取得字符串开始到单元结束的RECT
 	GetStringRect(hDC, szBuff, nEnd + 1,   x, y, &StringRect, lpDx);
+	//Xianfeng:通过以上两个RECT取得单元nBegin到nEnd的RECT
 	StringRect.left = BeginRect.right;//这里赋值的意义不太清楚，
+	//Xianfeng:如果RECT宽度是0，返回0
     if (StringRect.left == StringRect.right)
     {
 		g_nCurCaretPlace = -1;
@@ -1105,6 +1166,7 @@ DWORD CalculateCaretPlace(HDC   hDC,
 			 itemWidth = ((double)StringRect.right - (double)StringRect.left + 1) / ((double)nEnd - (double)nBegin + 1);//平均每个字的宽度
 			 for (i = 0; i <= (nEnd - nBegin + 1); i++)
 			 {
+				//Xianfeng:鼠标是否在单元的第i个字符上 
 			 	if (CalcCaretInThisPlace(g_CurMousePos.x, (double)((double)StringRect.left + (double)(itemWidth * i))))//计算鼠标聚焦的矩形块的宽度
 			 	{
 				 	g_nCurCaretPlace = i;
@@ -1272,6 +1334,20 @@ DWORD CalculateCaretPlaceW(HDC   hDC,
 	return 0L;
 }
 
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：GetEngLishCaretPlace 
+// 函数参数：HDC   hDC:对方的DC
+//			 LPSTR szBuff:截获的文本
+//			 int x:截获文本输出的x坐标
+//			 int y:截获文本输出的y坐标
+//			 CONST INT *lpDx:是否设置了字符间距
+//			 int   nBegin:当前单元开始位置
+//			 int   nEnd:当前单元结束位置
+//			 int   turnto:方向，从右向左RIGHT或从左向右LEFT
+// 返 回 值：DWORD:0L:计算成功
+//				   01:计算成功	
+// 函数说明：从右向左或从左向右判断当前鼠标在哪个字符内 
+// $_FUNCTION_END ********************************
 DWORD GetEngLishCaretPlace(HDC   hDC, 
 						   LPSTR szBuff,
 						   int   x,
@@ -1288,8 +1364,10 @@ DWORD GetEngLishCaretPlace(HDC   hDC,
 	if (turnto == RIGHT)
 	{
 		i = TempPlace;
+		//Xianfeng:取得整句字符串的RECT
 		GetStringRect(hDC, szBuff, i, x, y, &CaretPrevRect, lpDx);
 		
+		//Xianfeng:从右向左判断当前鼠标在哪个字符内
 		for (i = TempPlace; i <= nEnd; i++)
 		{
 			 GetStringRect(hDC, szBuff, i + 1, x, y, &CaretNextRect, lpDx);
@@ -1311,8 +1389,10 @@ DWORD GetEngLishCaretPlace(HDC   hDC,
 	else
 	{
 		i = TempPlace;
+		//Xianfeng:取得整句字符串的RECT
 		GetStringRect(hDC, szBuff, i + 1, x, y, &CaretNextRect, lpDx);
 
+		//Xianfeng:从左向右判断当前鼠标在哪个字符内
 		for (i = TempPlace; i >= nBegin; i--)
 		{
 			 GetStringRect(hDC, szBuff, i, x, y, &CaretPrevRect, lpDx);
@@ -1420,6 +1500,14 @@ DWORD GetEngLishCaretPlaceW(HDC   hDC,
 	return 0;
 }
 //判断鼠标是否聚焦字
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：CalcCaretInThisPlace 
+// 函数参数：int CaretX:当前鼠标的x位置
+//			 double nPlace:单元的第几个字符的x位置
+// 返 回 值：BOOL:TRUE:在
+//				   FALSE:不在	
+// 函数说明：鼠标是否在单元的某个字符上 
+// $_FUNCTION_END ********************************
 BOOL CalcCaretInThisPlace(int CaretX, double nPlace)
 {
 /*	if ((double)CaretX == nPlace)
@@ -1456,6 +1544,18 @@ int GetHZBeginPlace(LPSTR lpszHzBuff, int nBegin, int nEnd, LPRECT lpStringRect)
 	return (nBegin + nReturn);
 }
 
+// $_FUNCTION_BEGIN ******************************	//Xianfeng:
+// 函数名称：AddToTotalWord 
+// 函数参数：LPSTR szBuff:截获的文本
+//			 int cbLen:截获的文本长度
+//			 int   nBegin:当前单元开始位置
+//			 int   nEnd:当前单元结束位置
+//			 int   nCharType:当前单元类型
+//			 RECT  StringRect:当前鼠标所在单元的区域
+//			 BOOL  bInCurWord:是否在当前单元上
+// 返 回 值：
+// 函数说明：添加当前显示的单元 
+// $_FUNCTION_END ********************************
 void AddToTotalWord(LPSTR szBuff, 
 					int   cbLen, 
 					int   nBegin,
